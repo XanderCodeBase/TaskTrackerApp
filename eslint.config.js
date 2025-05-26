@@ -1,28 +1,54 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
+import js from '@eslint/js';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+import pluginReact from 'eslint-plugin-react';
+import eslintPluginPrettier from 'eslint-plugin-prettier';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
-export default tseslint.config(
-  { ignores: ['dist'] },
+export default [
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
       globals: globals.browser,
+      parserOptions: {
+        ecmaVersion: 2021,
+        sourceType: 'module',
+      },
     },
     plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
+      prettier: eslintPluginPrettier,
     },
     rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      ...js.configs.recommended.rules,
+      ...eslintConfigPrettier.rules,
+      'prettier/prettier': 'error',
     },
   },
-)
+  ...tseslint.configs.recommended,
+  {
+    files: ['**/*.{ts,mts,cts,tsx}'],
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+    },
+    languageOptions: {
+      parser: tseslint.parser,
+    },
+    rules: {
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+    },
+  },
+  {
+    files: ['**/*.{jsx,tsx}'],
+    ...pluginReact.configs.flat.recommended,
+    settings: {
+      react: {
+        version: '18.2', // Replace with your React version (e.g., '18.2' for 18.2.0)
+      },
+    },
+    rules: {
+      ...pluginReact.configs.flat.recommended.rules,
+      'react/prop-types': 'off', // Disable prop-types since you're using TypeScript
+      'react/react-in-jsx-scope': 'off', // Disable react-in-jsx-scope rule
+    },
+  },
+];
